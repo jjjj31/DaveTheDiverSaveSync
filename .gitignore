@@ -1,0 +1,10 @@
+DAVE_SYNC.log
+DAVE_Mobile_Backup/
+DAVE_PC_Backup/
+DAVE_Mobile_Export/
+DAVE_Mobile_Backu/
+dave_temp_pull/
+push_tmp/
+temp_pull/
+*.tmp
+*.log
