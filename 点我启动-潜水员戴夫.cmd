@@ -43,24 +43,24 @@ for /f %%i in ('powershell -noprofile -command "Get-Date -Format yyyyMMdd_HHmmss
 echo. >> "!LOGFILE!" 2>nul
 echo ===== %DATE% %TIME% ===== >> "!LOGFILE!" 2>nul
 cls
-echo ==========================================
-echo          DAVE THE DIVER SAVE SYNC
-echo ==========================================
-echo  [电脑存档] !PC_SAVE!
-echo  [手机存档] !MOBILE_SAVE!
-echo ------------------------------------------
-echo  1. 同步到手机  PC -^> Mobile
-echo  2. 同步到电脑  Mobile -^> PC
-echo  3. 仅导出到手机中转目录 ^(MT管理器用^)
-echo  4. 恢复电脑存档
-echo  5. 恢复手机存档
-echo  6. 导出手机存档到电脑
-echo  7. 检查手机存档状态
-echo  8. 连接教程
-echo  9. 退出
-echo ------------------------------------------
-echo  [设备] !DEVICE_STR!
-echo ------------------------------------------
+echo(==========================================
+echo(         DAVE THE DIVER SAVE SYNC
+echo(==========================================
+echo( [PC Save] !PC_SAVE!
+echo( [Mobile Save] !MOBILE_SAVE!
+echo(------------------------------------------
+echo( 1. PC to Mobile
+echo( 2. Mobile to PC
+echo( 3. Export to phone transfer folder
+echo( 4. Restore PC backup
+echo( 5. Restore Mobile backup
+echo( 6. Export Mobile save to PC
+echo( 7. Verify Mobile save
+echo( 8. USB tutorial
+echo( 9. Exit
+echo(------------------------------------------
+echo( [Device] !DEVICE_STR!
+echo(------------------------------------------
 set /p opt=请选择: 
 
 if "!opt!"=="1" goto TO_MOBILE
