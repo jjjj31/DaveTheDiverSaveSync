@@ -140,6 +140,11 @@ set "REMOTE_COUNT=0"
 for /f "delims=" %%c in ('"%ADB%" shell "if [ -d '%~1' ]; then find '%~1' -type f 2^>/dev/null ^| wc -l; else echo 0; fi" 2^>nul') do set "REMOTE_COUNT=%%c"
 exit /b
 
+:MAKE_ADB_LOCAL_PATH
+set "ADB_LOCAL_PATH=%~1"
+set "ADB_LOCAL_PATH=%ADB_LOCAL_PATH:\=/%"
+exit /b
+
 :PUSH_TO_STAGE
 echo [步骤] 正在把电脑存档放入手机中转目录...
 "%ADB%" shell "rm -rf '%PHONE_STAGE_ROOT%' ^&^& mkdir -p '%PHONE_STAGE%'" >nul 2>&1
@@ -205,7 +210,8 @@ call :CONFIRM
 echo [1/4] 正在备份手机当前存档...
 set "BK=%MB_ROOT%\%ts%"
 mkdir "%BK%" 2>nul
-"%ADB%" pull "%MOBILE_SAVE%/." "%BK%" > "%TEMP%\_dave_pull_backup.tmp" 2>&1
+call :MAKE_ADB_LOCAL_PATH "%BK%"
+"%ADB%" pull "%MOBILE_SAVE%/." "!ADB_LOCAL_PATH!" > "%TEMP%\_dave_pull_backup.tmp" 2>&1
 call :COUNT_LOCAL "%BK%"
 if !LOCAL_COUNT! gtr 0 (
     call :LOG "手机旧存档备份文件数: !LOCAL_COUNT!"
@@ -249,26 +255,29 @@ call :CONFIRM
 set "TEMP_P=%~dp0dave_temp_pull"
 rmdir /s /q "%TEMP_P%" 2>nul
 mkdir "%TEMP_P%" 2>nul
+call :MAKE_ADB_LOCAL_PATH "%TEMP_P%"
+set "TEMP_P_ADB=!ADB_LOCAL_PATH!"
 
 echo [1/4] 正在从手机游戏目录读取存档...
-"%ADB%" pull "%MOBILE_SAVE%/." "%TEMP_P%" > "%TEMP%\_dave_pull_mobile.tmp" 2>&1
+"%ADB%" pull "%MOBILE_SAVE%/." "!TEMP_P_ADB!" > "%TEMP%\_dave_pull_mobile.tmp" 2>&1
 call :COUNT_LOCAL "%TEMP_P%"
+if !LOCAL_COUNT! gtr 0 goto TO_PC_HAVE_FILES
 
-if !LOCAL_COUNT! leq 0 (
-    echo [提示] 直接读取失败或手机游戏目录为空。
-    echo [提示] 如果你已用 MT管理器 把 SData 复制到中转目录，本工具将尝试读取:
-    echo        %PHONE_STAGE%
-    "%ADB%" pull "%PHONE_STAGE%/." "%TEMP_P%" > "%TEMP%\_dave_pull_stage.tmp" 2>&1
-    call :COUNT_LOCAL "%TEMP_P%"
-)
+echo [提示] 直接读取失败或手机游戏目录为空。
+echo [提示] 现在尝试读取手机中转目录:
+echo        %PHONE_STAGE%
+"%ADB%" pull "%PHONE_STAGE%/." "!TEMP_P_ADB!" > "%TEMP%\_dave_pull_stage.tmp" 2>&1
+call :COUNT_LOCAL "%TEMP_P%"
+if !LOCAL_COUNT! gtr 0 goto TO_PC_HAVE_FILES
 
-if !LOCAL_COUNT! leq 0 (
-    echo [错误] 没有读取到手机存档，已停止。
-    echo [提示] 可先用 MT管理器 把游戏 SData 复制到 /sdcard/DAVE_SYNC_TRANSFER/SData 后再试。
-    rmdir /s /q "%TEMP_P%" 2>nul
-    pause
-    goto MENU
-)
+echo [错误] 没有读取到手机存档，已停止。
+echo [提示] 请先用 MT管理器 把游戏 SData 复制到下面这个中转目录:
+echo        %PHONE_STAGE%
+rmdir /s /q "%TEMP_P%" 2>nul
+pause
+goto MENU
+
+:TO_PC_HAVE_FILES
 
 echo [2/4] 正在备份电脑当前存档...
 set "PC_BK=%PC_ROOT%\%ts%"
@@ -402,8 +411,9 @@ call :CONFIRM
 "%ADB%" shell "am force-stop %PKG%" >nul 2>&1
 set "EXP=%EXP_ROOT%\%ts%"
 mkdir "%EXP%" 2>nul
+call :MAKE_ADB_LOCAL_PATH "%EXP%"
 echo 正在导出手机存档...
-"%ADB%" pull "%MOBILE_SAVE%/." "%EXP%" > "%TEMP%\_dave_export_mobile.tmp" 2>&1
+"%ADB%" pull "%MOBILE_SAVE%/." "!ADB_LOCAL_PATH!" > "%TEMP%\_dave_export_mobile.tmp" 2>&1
 call :COUNT_LOCAL "%EXP%"
 if !LOCAL_COUNT! leq 0 (
     echo [错误] 没有导出到任何文件。
