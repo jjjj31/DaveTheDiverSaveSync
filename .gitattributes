@@ -1,5 +1,5 @@
-*.cmd text eol=crlf
-*.bat text eol=crlf
+*.cmd -text
+*.bat -text
 *.md text eol=lf
 *.txt text eol=lf
 *.properties text eol=lf
